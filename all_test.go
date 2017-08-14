@@ -22,7 +22,10 @@ func TestConvert(t *testing.T) {
 	dest, err := os.Create("./testdata/dest/dest.mp4")
 	Expect(t, err).ToBe(nil)
 	Expect(t, dest).TypeOf("*os.File")
-	defer dest.Close()
+	defer func() {
+		dest.Close()
+		os.Remove(dest.Name())
+	}()
 
 	encoder, err := NewEncoder(src)
 	Expect(t, err).ToBe(nil)
