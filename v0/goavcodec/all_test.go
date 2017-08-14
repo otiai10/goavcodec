@@ -38,9 +38,7 @@ func TestClient_Convert(t *testing.T) {
 	err = client.Convert(src, dest)
 	Expect(t, err).ToBe(nil)
 
-	f, err := os.Open(dest)
-	Expect(t, err).ToBe(nil)
-	info, err := f.Stat()
+	info, err := os.Stat(dest)
 	Expect(t, err).ToBe(nil)
 	Expect(t, info.IsDir()).ToBe(false)
 	Expect(t, info.Size() > 100).ToBe(true)
