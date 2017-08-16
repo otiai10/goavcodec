@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	ffmpeg = "ffmpeg"
+	avconv = "avconv"
 )
 
 // Client ...
@@ -18,7 +18,7 @@ type Client struct {
 
 // NewClient looks path for `ffmpeg` and returns initialized Client.
 func NewClient() (*Client, error) {
-	bin, err := exec.LookPath(ffmpeg)
+	bin, err := exec.LookPath(avconv)
 	if err != nil {
 		return nil, err
 	}
