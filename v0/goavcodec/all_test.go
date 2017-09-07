@@ -1,6 +1,7 @@
 package goavcodec
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +10,13 @@ import (
 
 	. "github.com/otiai10/mint"
 )
+
+func TestMain(m *testing.M) {
+	os.MkdirAll("../../testdata/dest", os.ModePerm)
+	code := m.Run()
+	os.RemoveAll("../../testdata/dest")
+	os.Exit(code)
+}
 
 func TestNewClient(t *testing.T) {
 	client, err := NewClient()
@@ -43,5 +51,12 @@ func TestClient_Convert(t *testing.T) {
 	Expect(t, info.IsDir()).ToBe(false)
 	Expect(t, info.Size() > 100).ToBe(true)
 
-	os.Remove(dest)
+	When(t, "not-existing file path is given", func(t *testing.T) {
+		client, _ := NewClient()
+		src, _ := filepath.Abs("notfound.webm")
+		dest, _ := filepath.Abs(fmt.Sprintf("../../testdata/dest/%v.mp4", time.Now().Unix()))
+		err = client.Convert(src, dest)
+		Expect(t, err).Not().ToBe(nil)
+		Expect(t, bytes.HasSuffix(client.StdErr, []byte("No such file or directory\n"))).ToBe(true)
+	})
 }

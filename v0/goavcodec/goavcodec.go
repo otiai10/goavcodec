@@ -67,7 +67,7 @@ func (c *Client) Convert(src, dest string) error {
 		return fmt.Errorf("failed to start command specified with `%s`: %s", c.bin, err.Error())
 	}
 	if err = cmd.Wait(); err != nil {
-		return fmt.Errorf("command has not completed successfully: %s", err.Error())
+		return fmt.Errorf("command has not completed successfully: %s: %s", err.Error(), string(c.StdErr))
 	}
 
 	select {
