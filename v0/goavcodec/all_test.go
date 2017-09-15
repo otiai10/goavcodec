@@ -29,8 +29,8 @@ func srcpath(name string) string {
 
 func destpath(name string) string {
 	ext := filepath.Ext(name)
-	label := strings.Replace(filepath.Base(name), "."+ext, "", 1)
-	dest, err := filepath.Abs(fmt.Sprintf("../../testdata/dest/dest.%s.%v.%s", label, time.Now().Unix(), ext))
+	label := strings.Replace(filepath.Base(name), ext, "", 1)
+	dest, err := filepath.Abs(fmt.Sprintf("../../testdata/dest/%s.%v%s", label, time.Now().Unix(), ext))
 	if err != nil {
 		panic(err)
 	}

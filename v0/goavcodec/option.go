@@ -5,12 +5,15 @@ import (
 	"strconv"
 )
 
+// MakeArgFunc represents function which can make argument of avconv binary.
+type MakeArgFunc func() []string
+
 // Options ...
 type Options struct {
-	Speed *float64
+	Speed MakeArgFunc
 }
 
-// Set ...
+// Set is an alias for "SetXXX" methods.
 func (options *Options) Set(name string, val interface{}) *Options {
 	switch name {
 	case "speed":
@@ -25,17 +28,22 @@ func (options *Options) Set(name string, val interface{}) *Options {
 	return options
 }
 
-// SetSpeed ...
+// SetSpeed sets speed option.
 func (options *Options) SetSpeed(speed float64) *Options {
-	options.Speed = &speed
+	if speed == 1 {
+		return options
+	}
+	options.Speed = func() []string {
+		return []string{"-vf", fmt.Sprintf("setpts=(1/%v)*PTS", speed)}
+	}
 	return options
 }
 
 // ToArgs ...
 func (options *Options) ToArgs() []string {
 	args := []string{}
-	if options.Speed != nil && *options.Speed != 1 {
-		args = append(args, "-vf", fmt.Sprintf("setpts=(1/%v)*PTS", *options.Speed))
+	if options.Speed != nil {
+		args = append(args, options.Speed()...)
 	}
 	return args
 }
