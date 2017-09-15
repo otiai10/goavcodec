@@ -30,6 +30,15 @@ func TestNewClient(t *testing.T) {
 		Expect(t, err).Not().ToBe(nil)
 		os.Setenv("PATH", envpath)
 	})
+
+	When(t, "Specified bin path is not found", func(t *testing.T) {
+		_, err := NewClient("/foobar")
+		Expect(t, err).Not().ToBe(nil)
+	})
+	When(t, "Specified bin path is not executable", func(t *testing.T) {
+		_, err := NewClient("./all_test.go")
+		Expect(t, err).Not().ToBe(nil)
+	})
 }
 
 func TestClient_Convert(t *testing.T) {

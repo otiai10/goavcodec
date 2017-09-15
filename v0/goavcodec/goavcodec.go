@@ -25,7 +25,7 @@ func NewClient(binpath ...string) (*Client, error) {
 		if err != nil {
 			return nil, err
 		}
-		if info.Mode() < 0111 {
+		if info.Mode()%2 == 0 {
 			return nil, fmt.Errorf("path specified with `%s` is not executable", binpath[0])
 		}
 		return &Client{bin: binpath[0]}, nil
@@ -39,7 +39,7 @@ func NewClient(binpath ...string) (*Client, error) {
 
 // Convert just converts src to dest with using `ffmpeg -i`
 func (c *Client) Convert(src, dest string) error {
-	cmd := exec.Command(c.bin, "-y", "-i", src, dest)
+	cmd := exec.Command(c.bin, c.Args(src, dest)...)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return fmt.Errorf("failed to pipe stderr: %s", err.Error())
@@ -77,4 +77,11 @@ func (c *Client) Convert(src, dest string) error {
 		return nil
 	}
 
+}
+
+// Args ...
+func (c *Client) Args(src, dest string) []string {
+	commandline := []string{"-y", "-i", src}
+	commandline = append(commandline, dest)
+	return commandline
 }
