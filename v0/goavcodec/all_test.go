@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -16,6 +17,24 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 	os.RemoveAll("../../testdata/dest")
 	os.Exit(code)
+}
+
+func srcpath(name string) string {
+	src, err := filepath.Abs(fmt.Sprintf("../../testdata/src/%s", name))
+	if err != nil {
+		panic(err)
+	}
+	return src
+}
+
+func destpath(name string) string {
+	ext := filepath.Ext(name)
+	label := strings.Replace(filepath.Base(name), "."+ext, "", 1)
+	dest, err := filepath.Abs(fmt.Sprintf("../../testdata/dest/dest.%s.%v.%s", label, time.Now().Unix(), ext))
+	if err != nil {
+		panic(err)
+	}
+	return dest
 }
 
 func TestNewClient(t *testing.T) {
@@ -47,9 +66,8 @@ func TestClient_Convert(t *testing.T) {
 	Expect(t, err).ToBe(nil)
 	Expect(t, client).TypeOf("*goavcodec.Client")
 
-	src, err := filepath.Abs("../../testdata/src/origin.webm")
-	Expect(t, err).ToBe(nil)
-	dest, err := filepath.Abs(fmt.Sprintf("../../testdata/dest/dest.%v.mp4", time.Now().Unix()))
+	src := srcpath("origin.webm")
+	dest := destpath("normal.mp4")
 	Expect(t, err).ToBe(nil)
 
 	err = client.Convert(src, dest)
@@ -62,10 +80,23 @@ func TestClient_Convert(t *testing.T) {
 
 	When(t, "not-existing file path is given", func(t *testing.T) {
 		client, _ := NewClient()
-		src, _ := filepath.Abs("notfound.webm")
-		dest, _ := filepath.Abs(fmt.Sprintf("../../testdata/dest/%v.mp4", time.Now().Unix()))
+		src := srcpath("notfound.webm")
+		dest := destpath("foo.mp4")
 		err = client.Convert(src, dest)
 		Expect(t, err).Not().ToBe(nil)
 		Expect(t, bytes.HasSuffix(client.StdErr, []byte("No such file or directory\n"))).ToBe(true)
+	})
+
+	When(t, "Options specified", func(t *testing.T) {
+		client, err := NewClient()
+		Expect(t, err).ToBe(nil)
+		src := srcpath("origin.webm")
+		Expect(t, err).ToBe(nil)
+		dest := destpath("double_speed.mp4")
+		Expect(t, err).ToBe(nil)
+		opt := new(Options)
+		opt.Set("speed", 2).Set("speed", 2.0).Set("speed", "2")
+		err = client.Convert(src, dest, opt)
+		Expect(t, err).ToBe(nil)
 	})
 }

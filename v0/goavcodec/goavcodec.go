@@ -13,9 +13,10 @@ const (
 
 // Client ...
 type Client struct {
-	bin    string
-	StdOut []byte
-	StdErr []byte
+	bin     string
+	StdOut  []byte
+	StdErr  []byte
+	Options *Options
 }
 
 // NewClient looks path for `ffmpeg` and returns initialized Client.
@@ -38,7 +39,10 @@ func NewClient(binpath ...string) (*Client, error) {
 }
 
 // Convert just converts src to dest with using `ffmpeg -i`
-func (c *Client) Convert(src, dest string) error {
+func (c *Client) Convert(src, dest string, opts ...*Options) error {
+	if len(opts) != 0 {
+		c.Options = opts[0]
+	}
 	cmd := exec.Command(c.bin, c.Args(src, dest)...)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -82,6 +86,9 @@ func (c *Client) Convert(src, dest string) error {
 // Args ...
 func (c *Client) Args(src, dest string) []string {
 	commandline := []string{"-y", "-i", src}
+	if c.Options != nil {
+		commandline = append(commandline, c.Options.ToArgs()...)
+	}
 	commandline = append(commandline, dest)
 	return commandline
 }
