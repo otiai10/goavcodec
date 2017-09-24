@@ -91,12 +91,21 @@ func TestClient_Convert(t *testing.T) {
 		client, err := NewClient()
 		Expect(t, err).ToBe(nil)
 		src := srcpath("origin.webm")
-		Expect(t, err).ToBe(nil)
 		dest := destpath("double_speed.mp4")
-		Expect(t, err).ToBe(nil)
 		opt := new(Options)
 		opt.Set("speed", 2).Set("speed", 2.0).Set("speed", "2")
 		err = client.Convert(src, dest, opt)
 		Expect(t, err).ToBe(nil)
 	})
+}
+
+func TestClient_Set(t *testing.T) {
+	client, err := NewClient()
+	Expect(t, err).ToBe(nil)
+	src := srcpath("origin.webm")
+	dest := destpath("trimmed.mp4")
+	opt := new(Options)
+	opt.Set("start", "3s").Set("duration", "2s").Set("speed", 2)
+	err = client.Convert(src, dest, opt)
+	Expect(t, err).ToBe(nil)
 }

@@ -43,7 +43,8 @@ func (c *Client) Convert(src, dest string, opts ...*Options) error {
 	if len(opts) != 0 {
 		c.Options = opts[0]
 	}
-	cmd := exec.Command(c.bin, c.Args(src, dest)...)
+	args := c.Args(src, dest)
+	cmd := exec.Command(c.bin, args...)
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return fmt.Errorf("failed to pipe stderr: %s", err.Error())
@@ -71,7 +72,7 @@ func (c *Client) Convert(src, dest string, opts ...*Options) error {
 		return fmt.Errorf("failed to start command specified with `%s`: %s", c.bin, err.Error())
 	}
 	if err = cmd.Wait(); err != nil {
-		return fmt.Errorf("command has not completed successfully: %s: %s", err.Error(), string(c.StdErr))
+		return fmt.Errorf("command has not completed successfully: %s: %s: %v", err.Error(), string(c.StdErr), args)
 	}
 
 	select {
@@ -85,10 +86,17 @@ func (c *Client) Convert(src, dest string, opts ...*Options) error {
 
 // Args ...
 func (c *Client) Args(src, dest string) []string {
-	commandline := []string{"-y", "-i", src}
-	if c.Options != nil {
-		commandline = append(commandline, c.Options.ToArgs()...)
+	args := []string{}
+	if c.Options != nil && c.Options.Start != nil {
+		args = append(args, c.Options.Start()...)
 	}
-	commandline = append(commandline, dest)
-	return commandline
+	args = append(args, "-y", "-i", src)
+	if c.Options != nil && c.Options.Speed != nil {
+		args = append(args, c.Options.Speed()...)
+	}
+	if c.Options != nil && c.Options.Duration != nil {
+		args = append(args, c.Options.Duration()...)
+	}
+	args = append(args, dest)
+	return args
 }
